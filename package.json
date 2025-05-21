@@ -1,0 +1,17 @@
+{
+  "name": "foothelper",
+  "version": "1.0.0",
+  "description": "Bot that can be your orginiser",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon source/index.js",
+    "start": "node source/index.js"
+  },
+  "keywords": [],
+  "author": "Denys Hlushkov",
+  "license": "MIT",
+  "dependencies": {
+    "node-telegram-bot-api": "^0.66.0",
+    "nodemon": "^3.1.10"
+  }
+}
