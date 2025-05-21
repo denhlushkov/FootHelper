@@ -1,3 +1,3 @@
 # FootHelper
 
-Bot that can be your orginiser
+Bot that can be your organizer
