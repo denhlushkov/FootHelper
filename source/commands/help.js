@@ -7,6 +7,7 @@ class HelpCommand extends Command {
   /start - почати
   /help - допомога
   /info - інформація
+  /matches - найближчі події
     `;
     return this.bot.sendMessage(this.msg.chat.id, helpText);
   }
