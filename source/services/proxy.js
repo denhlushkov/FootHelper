@@ -4,7 +4,7 @@ class MatchProxy {
   constructor() {
     this.service = new MatchService();
     this.cache = new Map(); 
-    this.cacheTTL = 1000 * 60;
+    this.cacheTime = 1000 * 60;
   }
 
   async getLatestMatches() {
@@ -12,11 +12,11 @@ class MatchProxy {
     const now = Date.now();
 
     const cached = this.cache.get(url);
-    if (cached && now - cached.lastFetch < this.cacheTTL) {
+    if (cached && now - cached.lastFetch < this.cacheTime) {
       console.log('[Proxy] Serving from cache...');
       return cached.data;
     }
-
+    
     try {
       console.log('[Proxy] Fetching fresh match data...');
       const allMatches = await this.service.fetchMatches(url);
