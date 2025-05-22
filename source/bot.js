@@ -18,13 +18,7 @@ class Bot {
   
   init() {
     this.bot.on('message', async (msg) => {
-      const command = msg.text?.trim().toLowerCase();
-      const handler = this.commandFactory.create(command, msg);
-      if (handler) {
-        await handler.execute();
-      } else {
-        this.bot.sendMessage(msg.chat.id, 'Невідома команда. Напишіть /help для списку команд.');
-      }
+      await this.handler.handle(msg);
     });
   }
 }
