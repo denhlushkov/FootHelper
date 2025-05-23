@@ -4,9 +4,9 @@ const InfoCommand = require('./info');
 const MatchesCommand = require('./matches');
 
 class CommandFactory {
-  constructor(botIn, proxy) {
+  constructor(botIn, service) {
     this.bot = botIn;
-    this.matchProxy = proxy;
+    this.service = service;
   }
 
   create(command, msg) {
@@ -18,7 +18,7 @@ class CommandFactory {
       case '/info':
         return new InfoCommand(this.bot, msg);
       case '/matches':
-        return new MatchesCommand(this.bot, msg, this.matchProxy);
+        return new MatchesCommand(this.bot, msg, this.service);
       default:
         return null;
     }

@@ -1,15 +1,15 @@
 const Command = require('./command');
 
 class MatchesCommand extends Command {
-  constructor(bot, msg, proxy) {
+  constructor(bot, msg, service) {
     super(bot, msg);
-    this.matchProxy = proxy;
+    this.service = service;
   }
 
   async execute() {
     const chatId = this.msg.chat.id;
     try {
-      const matches = await this.matchProxy.getLatestMatches();
+      const matches = await this.service.getLatestMatches();
 
       if (!matches.length) {
         return this.bot.sendMessage(chatId, 'Наразі немає активних матчів.');
