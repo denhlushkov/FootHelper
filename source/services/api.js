@@ -1,36 +1,43 @@
 const https = require('https');
+const { parser } = require('stream-json');
+const { pick } = require('stream-json/filters/Pick');
+const { streamArray } = require('stream-json/streamers/StreamArray');
+const { chain } = require('stream-chain');
 
 class MatchService {
-  constructor() {
-    this.API_URL = 'https://v3.football.api-sports.io/fixtures?league=332&season=2025';
-    this.API_KEY = '948b105f474030e0a7bbecb4e03da314';
-  }
+  async getLeagueStandings(leagueCode) {
+    const url = `https://api.football-data.org/v4/competitions/${leagueCode}/standings`;
+    const options = {
+      headers: {
+        'X-Auth-Token': '4dc2bb7f92df434da375a6d6d7dec5bc'
+      }
+    };
 
-  async getLatestMatches() {
     return new Promise((resolve, reject) => {
-      const options = {
-        headers: {
-          'x-apisports-key': this.API_KEY,
-        },
-      };
+      https.get(url, options, (res) => {
+        if (res.statusCode !== 200) {
+          return reject(new Error(`Request failed with status ${res.statusCode}`));
+        }
 
-      https.get(this.API_URL, options, (res) => {
-        let data = '';
+        const pipeline = chain([
+          parser(),
+          pick({ filter: 'standings.0.table' }),
+          streamArray()
+        ]);
 
-        res.on('data', (chunk) => (data += chunk));
-        res.on('end', () => {
-          try {
-            const json = JSON.parse(data);
-            const matches = (json.response || []).map((match) => ({
-              home: match.teams.home.name,
-              away: match.teams.away.name,
-              timestamp: new Date(match.fixture.timestamp * 1000).toLocaleString(),
-            }));
-            resolve(matches);
-          } catch (err) {
-            reject(err);
-          }
+        const standings = [];
+
+        pipeline.on('data', ({ value }) => {
+          standings.push({
+            name: value.team.name,
+            points: value.points
+          });
         });
+
+        pipeline.on('end', () => resolve(standings));
+        pipeline.on('error', (err) => reject(err));
+
+        res.pipe(pipeline);
       }).on('error', reject);
     });
   }

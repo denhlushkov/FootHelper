@@ -3,6 +3,7 @@ const CommandFactory = require('./commands/factory');
 const MessageHandler = require('./strategies/messageHandler');
 const MatchProxy = require('./services/proxy');
 const MatchService = require('./services/api');
+const CallbackQueryHandler = require('./strategies/callbackHandler');
 
 const TOKEN = '8007962131:AAF8NFQpZAtT-ZC2hpH_A4-2SovIukRIfhY';
 
@@ -12,11 +13,16 @@ class Bot {
     this.service = new MatchProxy(new MatchService());
     this.commandFactory = new CommandFactory(this.bot, this.service);
     this.handler = new MessageHandler(this.commandFactory);
+    this.callbackHandler = new CallbackQueryHandler(this.bot, this.service);
   }
   
   init() {
     this.bot.on('message', async (msg) => {
       await this.handler.handle(msg);
+    });
+
+    this.bot.on('callback_query', async (query) => {
+      await this.callbackHandler.handle(query);
     });
   }
 }
