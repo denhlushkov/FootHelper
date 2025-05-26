@@ -2,6 +2,7 @@ const StartCommand = require('./start');
 const HelpCommand = require('./help');
 const InfoCommand = require('./info');
 const StandingsCommand = require('./standings');
+const MatchesCommand = require('./matches');
 
 class CommandFactory {
   constructor(botIn, service) {
@@ -19,6 +20,8 @@ class CommandFactory {
         return new InfoCommand(this.bot, msg);
       case '/standings':
         return new StandingsCommand(this.bot, msg, this.service);
+      case '/matches':
+        return new MatchesCommand(this.bot, msg, this.service);
       default:
         return null;
     }
