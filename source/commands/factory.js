@@ -3,6 +3,7 @@ const HelpCommand = require('./help');
 const InfoCommand = require('./info');
 const StandingsCommand = require('./standings');
 const MatchesCommand = require('./matches');
+const LoggingDecorator = require('./decorator');
 
 class CommandFactory {
   constructor(botIn, service) {
@@ -11,20 +12,33 @@ class CommandFactory {
   }
 
   create(command, msg) {
+    let comInstance = null;
+
     switch (command) {
       case '/start':
-        return new StartCommand(this.bot, msg);
+        comInstance = new StartCommand(this.bot, msg);
+        break;
       case '/help':
-        return new HelpCommand(this.bot, msg);
+        comInstance = new HelpCommand(this.bot, msg);
+        break;
       case '/info':
-        return new InfoCommand(this.bot, msg);
+        comInstance = new InfoCommand(this.bot, msg);
+        break;
       case '/standings':
-        return new StandingsCommand(this.bot, msg, this.service);
+        comInstance = new StandingsCommand(this.bot, msg, this.service);
+        break;
       case '/matches':
-        return new MatchesCommand(this.bot, msg, this.service);
+        comInstance = new MatchesCommand(this.bot, msg, this.service);
+        break;
       default:
         return null;
     }
+
+    if (comInstance) {
+      return new LoggingDecorator(comInstance, this.bot, msg);
+    }
+
+    return null;
   }
 }
 

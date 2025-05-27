@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const TelegramApi = require('node-telegram-bot-api');
 const CommandFactory = require('./commands/factory');
 const MessageHandler = require('./strategies/messageHandler');
@@ -5,8 +7,10 @@ const MatchProxy = require('./services/proxy');
 const MatchService = require('./services/api');
 const CallbackQueryHandler = require('./strategies/callbackHandler');
 
-const TOKEN = '8007962131:AAF8NFQpZAtT-ZC2hpH_A4-2SovIukRIfhY';
-
+const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+if (!TOKEN) {
+    throw new Error("TELEGRAM_BOT_TOKEN environment variable is not set!");
+}
 class Bot {
   constructor() {
     this.bot = new TelegramApi(TOKEN, { polling: true });    

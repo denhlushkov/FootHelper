@@ -6,10 +6,13 @@ const { chain } = require('stream-chain');
 
 class MatchService {
   constructor() {
-    this.API_TOKEN = '4dc2bb7f92df434da375a6d6d7dec5bc';
+    this.API_TOKEN = process.env.API_TOKEN;
+    if (!this.API_TOKEN) {
+      throw new Error('API_TOKEN environment variable is not set!');
+    }
   }
 
-  async _fetchAndParse(url, filterPath) {
+  async _fetchAndParse(url, type) {
     const options = {
       headers: {
         'X-Auth-Token': this.API_TOKEN
@@ -27,7 +30,7 @@ class MatchService {
 
         const pipeline = chain([
           parser(),
-          pick({ filter: filterPath }),
+          pick({ filter: type }),
           streamArray()
         ]);
 
@@ -57,15 +60,15 @@ class MatchService {
 
   async getLeagueFixtures(leagueCode) {
     const today = new Date();
-    const futureDate = new Date();
-    futureDate.setDate(today.getDate() + 7);
-    const pastDate = new Date();
-    pastDate.setDate(today.getDate() - 7);
+    const future = new Date();
+    future.setDate(today.getDate() + 7);
+    const past = new Date();
+    past.setDate(today.getDate() - 7);
 
-    const formattedFutureDate = futureDate.toISOString().split('T')[0];
-    const formattedPastDate = pastDate.toISOString().split('T')[0];
+    const futureDate = future.toISOString().split('T')[0];
+    const pastDate = past.toISOString().split('T')[0];
 
-    const url = `https://api.football-data.org/v4/competitions/${leagueCode}/matches?dateFrom=${formattedPastDate}&dateTo=${formattedFutureDate}`;
+    const url = `https://api.football-data.org/v4/competitions/${leagueCode}/matches?dateFrom=${pastDate}&dateTo=${futureDate}`;
     const rawFixtures = await this._fetchAndParse(url, 'matches');
 
     return rawFixtures.map(match => ({
