@@ -3,7 +3,9 @@ const HelpCommand = require('./help');
 const InfoCommand = require('./info');
 const StandingsCommand = require('./standings');
 const MatchesCommand = require('./matches');
+const TopScorersCommand = require('./topscorers');
 const LoggingDecorator = require('./decorator');
+const ClubCommand = require('./club');
 
 class CommandFactory {
   constructor(botIn, service) {
@@ -29,6 +31,12 @@ class CommandFactory {
         break;
       case '/matches':
         comInstance = new MatchesCommand(this.bot, msg, this.service);
+        break;
+      case '/topscorers':
+        comInstance = new TopScorersCommand(this.bot, msg, this.service);
+        break;
+      case '/club':
+        comInstance = new ClubCommand(this.bot, msg, this.service);
         break;
       default:
         return null;

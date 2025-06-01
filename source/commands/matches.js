@@ -8,18 +8,17 @@ class MatchesCommand extends Command {
 
   async execute() {
     const chatId = this.msg.chat.id;
-    const leagues = {
-      'АПЛ': 'PL',
-      'Ла Ліга': 'PD',
-      'Серія А': 'SA',
-      'Бундесліга': 'BL1',
-      'Ліга чемпіонів': 'CL',
-    };
+    const leaguesData = this.service.getLeagueButtonsData();
+
+    if (leaguesData.length === 0) {
+      await this.bot.sendMessage(chatId, 'Наразі немає доступних ліг для перегляду матчів.');
+      return;
+    }
 
     const buttons = {
       reply_markup: {
-        inline_keyboard: Object.entries(leagues).map(([name, id]) => [
-          { text: name, callback_data: `fixtures_${id}` } 
+        inline_keyboard: leaguesData.map(item => [
+          { text: item.name, callback_data: `fixtures_${item.code}` } 
         ])
       }
     };

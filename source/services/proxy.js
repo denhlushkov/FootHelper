@@ -5,8 +5,9 @@ class MatchProxy {
     }
     this.service = service;
     this.cache = new Map();
-    this.cacheTime = 1000 * 60 * 5;
-    this.cleanupInterval = 1000 * 60;
+    this.teamCache = new Map();
+    this.cacheTime = 1000 * 60 * 5; 
+    this.cleanupInterval = 1000 * 60; 
 
     this.startCleanupTimer();
   }
@@ -54,6 +55,56 @@ class MatchProxy {
     return this._getData(leagueCode, 'fixtures', this.service.getLeagueFixtures.bind(this.service));
   }
 
+  async getLeagueTopScorers(leagueCode) {
+    return this._getData(leagueCode, 'topscorers', this.service.getLeagueTopScorers.bind(this.service));
+  }
+
+  getAvailableLeagueCodes() {
+    return this.service.getAvailableLeagueCodes();
+  }
+
+  getLeagueButtonsData() {
+    return this.service.getLeagueButtonsData();
+  }
+
+  async getLeagueTeams(leagueCode) {
+    return this._getData(leagueCode, 'teams', this.service.getLeagueTeams.bind(this.service));
+  }
+
+  async getTeamInfoAndMatches(teamId, lastNMatches = 5) {
+    const now = Date.now();
+    const cacheKey = `team_info_matches_${teamId}`; 
+    const cachedEntry = this.teamCache.get(cacheKey);
+
+    if (cachedEntry && now - cachedEntry.lastFetch < this.cacheTime) {
+      console.log(`[MatchProxy] Serving team info/matches for ${teamId} from cache...`);
+      return cachedEntry.data;
+    }
+
+    console.log(`[MatchProxy] Fetching fresh team info/matches for ${teamId}...`);
+    if (cachedEntry) {
+      this.teamCache.delete(cacheKey);
+    }
+
+    try {
+      const freshData = await this.service.getTeamInfoAndMatches(teamId, lastNMatches);
+
+      this.teamCache.set(cacheKey, {
+        lastFetch: now,
+        data: freshData
+      });
+
+      return freshData;
+    } catch (error) {
+      console.error(`[MatchProxy] Error fetching team info/matches for ${teamId}:`, error);
+      if (cachedEntry) {
+        console.warn(`[MatchProxy] Returning stale cache data for team ${teamId} due to error.`);
+        return cachedEntry.data;
+      }
+      throw new Error(`Failed to fetch team info/matches for ${teamId} and no cache available: ${error.message}`);
+    }
+  }
+
   startCleanupTimer() {
     if (this.cleanupTimer) return;
 
@@ -78,6 +129,14 @@ class MatchProxy {
       }
       leaguesToRemove.forEach(leagueCode => this.cache.delete(leagueCode));
 
+      const teamCacheKeysToRemove = [];
+      for (const [cacheKey, entry] of this.teamCache.entries()) {
+        if (now - entry.lastFetch >= this.cacheTime) {
+          teamCacheKeysToRemove.push(cacheKey);
+          cleanedCount++;
+        }
+      }
+      teamCacheKeysToRemove.forEach(cacheKey => this.teamCache.delete(cacheKey));
 
       if (cleanedCount > 0) {
         console.log(`[MatchProxy] Cleaned up ${cleanedCount} expired cache entries.`);
@@ -91,32 +150,6 @@ class MatchProxy {
       clearInterval(this.cleanupTimer);
       this.cleanupTimer = null;
       console.log('[MatchProxy] Cache cleanup timer stopped.');
-    }
-  }
-
-  clearCache(leagueCode, dataType) {
-    if (leagueCode) {
-      const leagueCache = this.cache.get(leagueCode);
-      if (leagueCache) {
-        if (dataType) {
-          if (leagueCache.delete(dataType)) {
-              console.log(`[MatchProxy] Manually cleared cache for ${leagueCode}/${dataType}.`);
-          } else {
-              console.log(`[MatchProxy] No cache found for ${leagueCode}/${dataType}.`);
-          }
-        } else {
-          this.cache.delete(leagueCode);
-          console.log(`[MatchProxy] Manually cleared all cache for ${leagueCode}.`);
-        }
-        if (leagueCache.size === 0) {
-            this.cache.delete(leagueCode);
-        }
-      } else {
-        console.log(`[MatchProxy] No cache found for ${leagueCode}.`);
-      }
-    } else {
-      this.cache.clear();
-      console.log('[MatchProxy] Manually cleared all cache entries.');
     }
   }
 }

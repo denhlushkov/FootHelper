@@ -9,6 +9,8 @@ class HelpCommand extends Command {
   /info - інформація
   /standings - таблиці ліг
   /matches - розклад матчів
+  /topscorers - кращі бомбардири
+  /club - інформація про команду
     `;
     return this.bot.sendMessage(this.msg.chat.id, helpText);
   }
