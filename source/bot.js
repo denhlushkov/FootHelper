@@ -6,6 +6,7 @@ const MessageHandler = require('./strategies/messageHandler');
 const MatchProxy = require('./services/proxy');
 const MatchService = require('./services/api');
 const CallbackQueryHandler = require('./strategies/callbackHandler');
+const BOT_COMMANDS = require('./utils/botCommands');
 
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 if (!TOKEN) {
@@ -21,6 +22,8 @@ class Bot {
   }
   
   init() {
+    this.bot.setMyCommands(BOT_COMMANDS);
+
     this.bot.on('message', async (msg) => {
       await this.handler.handle(msg);
     });
